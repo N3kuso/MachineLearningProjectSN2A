@@ -23,14 +23,17 @@ from sklearn.svm import LinearSVC
 from FunctionsCreditCardFraudDetection import print_performance
 # Librairies pour maximiser les performances
 from sklearn.model_selection import GridSearchCV
+# Librairies pour afficher les performances
+from sklearn.metrics import ConfusionMatrixDisplay
+from sklearn.metrics import RocCurveDisplay
 
 ##############################################################################
 ## FLAG
 ##############################################################################
-flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
-flag_randomforest = 0 # Flag pour activer ou non les Forêts Aléatoires
+flag_undersampling = 0 # Flag pour activer ou non le sous-échantilonnage
+flag_randomforest = 1 # Flag pour activer ou non les Forêts Aléatoires
 flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
-flag_research_rf = 1 # Flag pour activer ou non la recherche des meilleurs paramètres
+flag_research_rf = 0 # Flag pour activer ou non la recherche des meilleurs paramètres
 
 ##############################################################################
 ## CHARGEMENT & TRAITEMENT DES DONNEES
@@ -107,8 +110,24 @@ if flag_research_rf == 1 :
 ## CLASSIFICATION AVEC FORETS ALEATOIRES
 ##############################################################################
 if flag_randomforest == 1 :
-    # Par défaut
-    clf_rf = RandomForestClassifier(random_state=random_state, max_depth=2) # Création d'un Classifieur Forêts Aléatoires
+    # Par défaut #
+    # clf_rf = RandomForestClassifier(random_state=random_state, max_depth=2) # Création d'un Classifieur Forêts Aléatoires
+    
+    # Avec les meilleurs paramètres trouvés avec GridSearchCV #
+    # Liste des meilleurs paramètres :
+    best_criterion = "gini"
+    best_max_depth = 9
+    best_min_samples_leaf = 1
+    best_min_samples_split = 4
+    best_n_estimators = 100
+        
+    clf_rf = RandomForestClassifier(
+        random_state=random_state,
+        criterion=best_criterion,
+        max_depth=best_max_depth,
+        min_samples_leaf=best_min_samples_leaf,
+        min_samples_split=best_min_samples_split,
+        n_estimators=best_n_estimators)
     
     clf_rf.fit(X_train, y_train) # On entraine le modèle sur les données d'entrainement
     
@@ -116,9 +135,15 @@ if flag_randomforest == 1 :
            "       RANDOM FOREST\n"
            "###########################\n")
     print(msg)
+    
     # Utilisation de ma fonction print_performance pour afficher quelques indices de performances de mon modèle
     print_performance(clf_rf, X_train, y_train, X_test, y_test)
-
+    
+    ConfusionMatrixDisplay.from_estimator(clf_rf, X_test, y_test)
+    plt.show()
+    
+    RocCurveDisplay.from_estimator(clf_rf, X_test, y_test)
+    plt.show()
 
 ##############################################################################
 ## CLASSIFICATION AVEC SVM
