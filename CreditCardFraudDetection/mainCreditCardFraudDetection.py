@@ -4,6 +4,10 @@ Script pour detecter les fraudes bancaires à l'aide du Machine Learning
 
 @author: kooky
 """
+flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
+flag_randomforest = 1 # Flag pour activer ou non les Forêts Aléatoires
+flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
+
 
 ##############################################################################
 ## CHARGEMENT & TRAITEMENT DES DONNEES
@@ -43,48 +47,51 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=train_size,
 print(f"Dimensions de la base d'entrainement : {X_train.shape}")
 print(f"Dimensions de la base de test : {X_test.shape}")
 
-# (A FAIRE) Sous-échantilonné le dataset
-from imblearn.under_sampling import RandomUnderSampler
-
-# Utilisation d'une méthode pour sous-échantilonner la classe Transaction Légitime (Majoritaire)
-rus = RandomUnderSampler(random_state=random_state)
-X_train, y_train = rus.fit_resample(X_train, y_train)
-print("Sous échantillonnage")
-print("Dimensions de la base d'entrainement : {X_train.shape}")
-print("Répartition des données :")
-print(y_train.value_counts())
+if flag_undersampling == 1 :
+    # Sous-échantilonner le dataset
+    from imblearn.under_sampling import RandomUnderSampler
+    
+    # Utilisation d'une méthode pour sous-échantilonner la classe Transaction Légitime (Majoritaire)
+    rus = RandomUnderSampler(random_state=random_state)
+    X_train, y_train = rus.fit_resample(X_train, y_train)
+    print("Sous échantillonnage")
+    print("Dimensions de la base d'entrainement : {X_train.shape}")
+    print("Répartition des données :")
+    print(y_train.value_counts())
 
 
 ##############################################################################
 ## CLASSIFICATION AVEC FORETS ALEATOIRES
 ##############################################################################
-from sklearn.ensemble import RandomForestClassifier
-from FunctionsCreditCardFraudDetection import print_performance
-
-clf_rf = RandomForestClassifier(random_state=random_state, max_depth=2) # Création d'un Classifieur Forêts Aléatoires
-clf_rf.fit(X_train, y_train) # On entraine le modèle sur les données d'entrainement
-
-msg = ("###########################\n"
-       "       RANDOM FOREST\n"
-       "###########################\n")
-print(msg)
-# Utilisation de ma fonction print_performance pour afficher quelques indices de performances de mon modèle
-print_performance(clf_rf, X_train, y_train, X_test, y_test)
+if flag_randomforest == 1 :
+    from sklearn.ensemble import RandomForestClassifier
+    from FunctionsCreditCardFraudDetection import print_performance
+    
+    clf_rf = RandomForestClassifier(random_state=random_state, max_depth=2) # Création d'un Classifieur Forêts Aléatoires
+    clf_rf.fit(X_train, y_train) # On entraine le modèle sur les données d'entrainement
+    
+    msg = ("###########################\n"
+           "       RANDOM FOREST\n"
+           "###########################\n")
+    print(msg)
+    # Utilisation de ma fonction print_performance pour afficher quelques indices de performances de mon modèle
+    print_performance(clf_rf, X_train, y_train, X_test, y_test)
 
 
 ##############################################################################
 ## CLASSIFICATION AVEC SVM
 ##############################################################################
-from sklearn.svm import LinearSVC
-
-clf_svc = LinearSVC(random_state=random_state) # Création d'un Classifieur SVM
-clf_svc.fit(X_train, y_train) # Entrainement du modèle
-
-msg = ("###########################\n"
-       "         LINEAR SVC\n"
-       "###########################\n")
-print(msg)
-
-# Affichage de quelques indices de performances
-print_performance(clf_svc, X_train, y_train, X_test, y_test)
+if flag_linearSVC == 1 :
+    from sklearn.svm import LinearSVC
+    
+    clf_svc = LinearSVC(random_state=random_state) # Création d'un Classifieur SVM
+    clf_svc.fit(X_train, y_train) # Entrainement du modèle
+    
+    msg = ("###########################\n"
+           "         LINEAR SVC\n"
+           "###########################\n")
+    print(msg)
+    
+    # Affichage de quelques indices de performances
+    print_performance(clf_svc, X_train, y_train, X_test, y_test)
 
