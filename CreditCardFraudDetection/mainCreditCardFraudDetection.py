@@ -4,23 +4,42 @@ Script pour detecter les fraudes bancaires à l'aide du Machine Learning
 
 @author: kooky
 """
-flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
-flag_randomforest = 1 # Flag pour activer ou non les Forêts Aléatoires
-flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
 
+##############################################################################
+## LIBRAIRIES
+##############################################################################
+# Librairies principales
+import numpy as np #Calcul mathématiques
+import matplotlib.pyplot as plt #Pour les tracés (alternative: from pylab import *)
+import pandas as pd
+# Librairies pour le traitement des données
+from sklearn.model_selection import train_test_split
+from imblearn.under_sampling import RandomUnderSampler
+# Librairie pour Forêts Aléatoires
+from sklearn.ensemble import RandomForestClassifier
+# Librairies pour SVM
+from sklearn.svm import LinearSVC
+# Librairies de fonctions utiles
+from FunctionsCreditCardFraudDetection import print_performance
+# Librairies pour maximiser les performances
+from sklearn.model_selection import GridSearchCV
+
+##############################################################################
+## FLAG
+##############################################################################
+flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
+flag_randomforest = 0 # Flag pour activer ou non les Forêts Aléatoires
+flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
+flag_research_rf = 1 # Flag pour activer ou non la recherche des meilleurs paramètres
 
 ##############################################################################
 ## CHARGEMENT & TRAITEMENT DES DONNEES
 ##############################################################################
-import numpy as np #Calcul mathématiques
-import matplotlib.pyplot as plt #Pour les tracés (alternative: from pylab import *)
-import pandas as pd
-
 ## Importation des données ##
 filename = "creditcard.csv"
 data = pd.read_csv(filename, delimiter=',')
 
-print(data)
+# print(data)
 print(f"Dimensions du dataset : {data.shape}")
 
 # # Optionel
@@ -31,7 +50,6 @@ print(f"Dimensions du dataset : {data.shape}")
 # plt.show()
 
 ## Traitement des données ##
-from sklearn.model_selection import train_test_split
 
 random_state = 77 # On fixe un random_state pour la répétabilité
 
@@ -49,7 +67,6 @@ print(f"Dimensions de la base de test : {X_test.shape}")
 
 if flag_undersampling == 1 :
     # Sous-échantilonner le dataset
-    from imblearn.under_sampling import RandomUnderSampler
     
     # Utilisation d'une méthode pour sous-échantilonner la classe Transaction Légitime (Majoritaire)
     rus = RandomUnderSampler(random_state=random_state)
@@ -59,15 +76,40 @@ if flag_undersampling == 1 :
     print("Répartition des données :")
     print(y_train.value_counts())
 
+##############################################################################
+## Rechercher des meilleurs hyperparamètres
+##############################################################################
+if flag_research_rf == 1 :
+    # Ensemble de paramètres à tester pour les forêts aléatoires afin d'en trouver les meilleurs
+    params_rf = {
+        "n_estimators" : [100],
+        "criterion" : ("gini", "entropy"),
+        "max_depth" : list(range(1,20)),
+        "min_samples_split" : [2,3,4],
+        "min_samples_leaf" : list(range(1,20))
+        }
+    # Résultat 22/01/2025 :
+        # {'criterion': 'gini',
+        #  'max_depth': 9,
+        #  'min_samples_leaf': 1,
+        #  'min_samples_split': 4,
+        #  'n_estimators': 100}
+        
+    # Rechercher des meilleurs paramètres avec la méthode GridSearchCV
+    clf_rf = RandomForestClassifier(random_state=random_state)
+    clf_rf_cv = GridSearchCV(clf_rf, params_rf, scoring="accuracy", n_jobs=-1, verbose=1, cv=3)
+    clf_rf_cv.fit(X_train, y_train)
+    
+    print("Meilleurs paramètres trouvés :")
+    print(clf_rf_cv.best_params_)
 
 ##############################################################################
 ## CLASSIFICATION AVEC FORETS ALEATOIRES
 ##############################################################################
 if flag_randomforest == 1 :
-    from sklearn.ensemble import RandomForestClassifier
-    from FunctionsCreditCardFraudDetection import print_performance
-    
+    # Par défaut
     clf_rf = RandomForestClassifier(random_state=random_state, max_depth=2) # Création d'un Classifieur Forêts Aléatoires
+    
     clf_rf.fit(X_train, y_train) # On entraine le modèle sur les données d'entrainement
     
     msg = ("###########################\n"
@@ -82,7 +124,6 @@ if flag_randomforest == 1 :
 ## CLASSIFICATION AVEC SVM
 ##############################################################################
 if flag_linearSVC == 1 :
-    from sklearn.svm import LinearSVC
     
     clf_svc = LinearSVC(random_state=random_state) # Création d'un Classifieur SVM
     clf_svc.fit(X_train, y_train) # Entrainement du modèle
