@@ -29,7 +29,7 @@ print(f"Dimensions du dataset : {data.shape}")
 ## Traitement des données ##
 from sklearn.model_selection import train_test_split
 
-random_state = 42 # On fixe un random_state pour la répétabilité
+random_state = 77 # On fixe un random_state pour la répétabilité
 
 # Séparation descripteurs/étiquettes
 X = data.drop(columns=["Class"]) # Descripteurs
@@ -44,7 +44,15 @@ print(f"Dimensions de la base d'entrainement : {X_train.shape}")
 print(f"Dimensions de la base de test : {X_test.shape}")
 
 # (A FAIRE) Sous-échantilonné le dataset
+from imblearn.under_sampling import RandomUnderSampler
 
+# Utilisation d'une méthode pour sous-échantilonner la classe Transaction Légitime (Majoritaire)
+rus = RandomUnderSampler(random_state=random_state)
+X_train, y_train = rus.fit_resample(X_train, y_train)
+print("Sous échantillonnage")
+print("Dimensions de la base d'entrainement : {X_train.shape}")
+print("Répartition des données :")
+print(y_train.value_counts())
 
 
 ##############################################################################
