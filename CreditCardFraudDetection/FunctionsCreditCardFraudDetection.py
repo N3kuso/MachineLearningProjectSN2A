@@ -6,7 +6,7 @@ Librairie de fonctions utiles pour le script mainCreditCardFraudDetection.py
 """
 
 ##############################################################################
-## MODULES UTILES
+## LIBRAIRIES
 ##############################################################################
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
