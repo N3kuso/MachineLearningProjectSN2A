@@ -34,10 +34,10 @@ from sklearn.metrics import RocCurveDisplay
 flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
 flag_randomforest = 0 # Flag pour activer ou non les Forêts Aléatoires
 flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
-flag_SVC = 0 # Flag pour activer ou non la SVC
+flag_SVC = 1 # Flag pour activer ou non la SVC
 flag_research_rf = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour RandomForest
 flag_research_linearSVC = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour LinearSVC
-flag_research_SVC = 1 # Flag pour activer ou non la recherche des meilleurs paramètres pour SVC
+flag_research_SVC = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour SVC
 
 ##############################################################################
 ## CHARGEMENT & TRAITEMENT DES DONNEES
@@ -134,7 +134,6 @@ if flag_research_linearSVC == 1:
 
 ## Recherche pour SVC
 if flag_research_SVC == 1:
-    
     ### ESSAI AVEC GRIDSEARCHCV NON CONCLUANT ###
     # # Ensemble de paramètres à tester pour la SVC
     # params_SVC = {
@@ -151,6 +150,23 @@ if flag_research_SVC == 1:
     
     # print("(SVC) Meilleurs paramètres trouvés :")
     # print(clf_SVC_cv.best_params_)
+    
+    ### ESSAI AVEC LA TECHNIQUE SIMPLE VU EN COURS ###
+    # Recherche des meilleurs hyperparamètres
+    c_test = [0.01,0.03,0.1,0.3,1,3,10,100]
+    g_test = [0.05,0.05,0.5,5,10,15,20,25]
+    best_score = 0
+    for c in c_test:
+        for g in g_test:
+            clf_SVC=SVC(C=c, gamma=g, kernel="rbf") 
+            clf_SVC.fit(X_train,y_train)
+            print(f"C = {c} | gamma= {g} -> Score : {clf_SVC.score(X_train,y_train)}")
+            if clf_SVC.score(X_train,y_train) > best_score:
+                best_score = clf_SVC.score(X_train,y_train)
+                best_c = c
+                best_g = g
+    
+    print(f" (SVC) Les meilleurs hyperparamètres sont : C = {best_c} et gamma = {best_g} avec un score de {best_score}")
     
 ##############################################################################
 ## CLASSIFICATION AVEC FORETS ALEATOIRES
@@ -229,16 +245,18 @@ if flag_linearSVC == 1 :
 ##############################################################################
 if flag_SVC == 1 :
     # Par défaut #
-    clf_SVC = SVC(random_state=random_state) # Création d'un Classifieur SVC
+    # clf_SVC = SVC(random_state=random_state) # Création d'un Classifieur SVC
     
-    # Avec les meilleurs paramètres trouvés avec GridSearchCV
+    # Avec les meilleurs paramètres trouvés avec Technique vu en cours #
     # Liste des meilleurs paramètres :
-    # best_C = 12
+    best_c = 1
+    best_g = 0.05
     
-    # # Création du modèle
-    # clf_linearSVC = LinearSVC(
-    #     random_state=random_state,
-    #     C=best_C)
+    # Création du modèle
+    clf_SVC = SVC(
+        random_state=random_state,
+        C=best_c,
+        gamma=best_g)
     
     clf_SVC.fit(X_train, y_train) # Entrainement du modèle
     
