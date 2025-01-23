@@ -19,6 +19,7 @@ from imblearn.under_sampling import RandomUnderSampler
 from sklearn.ensemble import RandomForestClassifier
 # Librairies pour SVM
 from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 # Librairies de fonctions utiles
 from FunctionsCreditCardFraudDetection import print_performance
 # Librairies pour maximiser les performances
@@ -31,8 +32,9 @@ from sklearn.metrics import RocCurveDisplay
 ## FLAG
 ##############################################################################
 flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
-flag_randomforest = 1 # Flag pour activer ou non les Forêts Aléatoires
-flag_linearSVC = 1 # Flag pour activer ou non la linearSVC
+flag_randomforest = 0 # Flag pour activer ou non les Forêts Aléatoires
+flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
+flag_SVC = 1 # Flag pour activer ou non la SVC
 flag_research_rf = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour RandomForest
 flag_research_linearSVC = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour LinearSVC
 
@@ -198,4 +200,36 @@ if flag_linearSVC == 1 :
     plt.show()
     
     RocCurveDisplay.from_estimator(clf_linearSVC, X_test, y_test)
+    plt.show()
+
+##############################################################################
+## CLASSIFICATION AVEC SVC
+##############################################################################
+if flag_SVC == 1 :
+    # Par défaut #
+    clf_SVC = SVC(random_state=random_state) # Création d'un Classifieur SVC
+    
+    # Avec les meilleurs paramètres trouvés avec GridSearchCV
+    # Liste des meilleurs paramètres :
+    # best_C = 12
+    
+    # # Création du modèle
+    # clf_linearSVC = LinearSVC(
+    #     random_state=random_state,
+    #     C=best_C)
+    
+    clf_SVC.fit(X_train, y_train) # Entrainement du modèle
+    
+    msg = ("###########################\n"
+           "           SVC\n"
+           "###########################\n")
+    print(msg)
+    
+    # Affichage de quelques indices de performances
+    print_performance(clf_SVC, X_train, y_train, X_test, y_test)
+
+    ConfusionMatrixDisplay.from_estimator(clf_SVC, X_test, y_test)
+    plt.show()
+    
+    RocCurveDisplay.from_estimator(clf_SVC, X_test, y_test)
     plt.show()
