@@ -30,10 +30,11 @@ from sklearn.metrics import RocCurveDisplay
 ##############################################################################
 ## FLAG
 ##############################################################################
-flag_undersampling = 0 # Flag pour activer ou non le sous-échantilonnage
+flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
 flag_randomforest = 1 # Flag pour activer ou non les Forêts Aléatoires
-flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
-flag_research_rf = 0 # Flag pour activer ou non la recherche des meilleurs paramètres
+flag_linearSVC = 1 # Flag pour activer ou non la linearSVC
+flag_research_rf = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour RandomForest
+flag_research_linearSVC = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour LinearSVC
 
 ##############################################################################
 ## CHARGEMENT & TRAITEMENT DES DONNEES
@@ -82,6 +83,7 @@ if flag_undersampling == 1 :
 ##############################################################################
 ## Rechercher des meilleurs hyperparamètres
 ##############################################################################
+## Recherche pour RandomForest
 if flag_research_rf == 1 :
     # Ensemble de paramètres à tester pour les forêts aléatoires afin d'en trouver les meilleurs
     params_rf = {
@@ -103,9 +105,29 @@ if flag_research_rf == 1 :
     clf_rf_cv = GridSearchCV(clf_rf, params_rf, scoring="accuracy", n_jobs=-1, verbose=1, cv=3)
     clf_rf_cv.fit(X_train, y_train)
     
-    print("Meilleurs paramètres trouvés :")
+    print("(RANDOM FOREST) Meilleurs paramètres trouvés :")
     print(clf_rf_cv.best_params_)
 
+
+## Recherche pour LinearSVC
+if flag_research_linearSVC == 1:
+    # Ensemble de paramètres à tester pour la LinearSVC
+    params_linearSVC = {
+        "C" : list(range(1,100))
+        }
+    
+    # Résultat 23/01/2025 :
+        # {'C': 12}
+        
+    
+    # Rechercher les meilleurs paramètres avec la méthode GridSearchCV
+    clf_linearSVC = LinearSVC(random_state=random_state)
+    clf_linearSVC_cv = GridSearchCV(clf_linearSVC, params_linearSVC, scoring="accuracy", n_jobs=-1, verbose=1, cv=3)
+    clf_linearSVC_cv.fit(X_train, y_train)
+    
+    print("(LINEARSVC) Meilleurs paramètres trouvés :")
+    print(clf_linearSVC_cv.best_params_)
+    
 ##############################################################################
 ## CLASSIFICATION AVEC FORETS ALEATOIRES
 ##############################################################################
@@ -121,6 +143,7 @@ if flag_randomforest == 1 :
     best_min_samples_split = 4
     best_n_estimators = 100
         
+    # Création du modèle
     clf_rf = RandomForestClassifier(
         random_state=random_state,
         criterion=best_criterion,
@@ -146,12 +169,22 @@ if flag_randomforest == 1 :
     plt.show()
 
 ##############################################################################
-## CLASSIFICATION AVEC SVM
+## CLASSIFICATION AVEC LINEARSVC
 ##############################################################################
 if flag_linearSVC == 1 :
+    # Par défaut #
+    #clf_linearSVC = LinearSVC(random_state=random_state) # Création d'un Classifieur LinearSVC
     
-    clf_svc = LinearSVC(random_state=random_state) # Création d'un Classifieur SVM
-    clf_svc.fit(X_train, y_train) # Entrainement du modèle
+    # Avec les meilleurs paramètres trouvés avec GridSearchCV
+    # Liste des meilleurs paramètres :
+    best_C = 12
+    
+    # Création du modèle
+    clf_linearSVC = LinearSVC(
+        random_state=random_state,
+        C=best_C)
+    
+    clf_linearSVC.fit(X_train, y_train) # Entrainement du modèle
     
     msg = ("###########################\n"
            "         LINEAR SVC\n"
@@ -159,5 +192,10 @@ if flag_linearSVC == 1 :
     print(msg)
     
     # Affichage de quelques indices de performances
-    print_performance(clf_svc, X_train, y_train, X_test, y_test)
+    print_performance(clf_linearSVC, X_train, y_train, X_test, y_test)
 
+    ConfusionMatrixDisplay.from_estimator(clf_linearSVC, X_test, y_test)
+    plt.show()
+    
+    RocCurveDisplay.from_estimator(clf_linearSVC, X_test, y_test)
+    plt.show()
