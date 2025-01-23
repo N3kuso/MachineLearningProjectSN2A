@@ -34,9 +34,10 @@ from sklearn.metrics import RocCurveDisplay
 flag_undersampling = 1 # Flag pour activer ou non le sous-échantilonnage
 flag_randomforest = 0 # Flag pour activer ou non les Forêts Aléatoires
 flag_linearSVC = 0 # Flag pour activer ou non la linearSVC
-flag_SVC = 1 # Flag pour activer ou non la SVC
+flag_SVC = 0 # Flag pour activer ou non la SVC
 flag_research_rf = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour RandomForest
 flag_research_linearSVC = 0 # Flag pour activer ou non la recherche des meilleurs paramètres pour LinearSVC
+flag_research_SVC = 1 # Flag pour activer ou non la recherche des meilleurs paramètres pour SVC
 
 ##############################################################################
 ## CHARGEMENT & TRAITEMENT DES DONNEES
@@ -129,6 +130,27 @@ if flag_research_linearSVC == 1:
     
     print("(LINEARSVC) Meilleurs paramètres trouvés :")
     print(clf_linearSVC_cv.best_params_)
+
+
+## Recherche pour SVC
+if flag_research_SVC == 1:
+    
+    ### ESSAI AVEC GRIDSEARCHCV NON CONCLUANT ###
+    # # Ensemble de paramètres à tester pour la SVC
+    # params_SVC = {
+    #     "C" : list(range(1,20)),
+    #     "kernel" : ["poly", "rbf", "sigmoid"],
+    #     #"degree" : list(range(1,6)),
+    #     "gamma" : list(range(1,10))
+    #     }
+  
+    # # Rechercher les meilleurs paramètres avec la méthode GridSearchCV
+    # clf_SVC = SVC(random_state=random_state)
+    # clf_SVC_cv = GridSearchCV(clf_SVC, params_SVC, scoring="accuracy", n_jobs=-1, verbose=1, cv=3)
+    # clf_SVC_cv.fit(X_train, y_train)
+    
+    # print("(SVC) Meilleurs paramètres trouvés :")
+    # print(clf_SVC_cv.best_params_)
     
 ##############################################################################
 ## CLASSIFICATION AVEC FORETS ALEATOIRES
